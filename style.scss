@@ -97,3 +97,67 @@ window.Bar {
 .dim-label {
   opacity: $dim-opacity;
 }
+
+// Network Popover
+.network-popover {
+  padding: 12px;
+  min-width: 300px;
+
+  separator {
+    margin: 4px 0;
+  }
+}
+
+.network-header {
+  padding-bottom: 8px;
+
+  .heading {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+}
+
+.current-network {
+  padding: 10px 8px;
+  border-radius: 8px;
+  background-color: color.adjust($fg-color, $alpha: -0.92);
+  margin-bottom: 8px;
+}
+
+.section-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  opacity: 0.7;
+  padding: 8px 4px 4px 4px;
+}
+
+.network-row {
+  padding: 8px 4px;
+  border-radius: 8px;
+  transition: background-color 150ms ease;
+
+  &:hover {
+    background-color: color.adjust($fg-color, $alpha: -0.92);
+  }
+}
+
+.network-icon {
+  opacity: 0.8;
+}
+
+.network-name {
+  font-weight: 500;
+}
+
+.network-status {
+  font-size: 0.85em;
+}
+
+.network-button {
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.lock-icon {
+  opacity: 0.6;
+}
