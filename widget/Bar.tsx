@@ -1,9 +1,9 @@
 import app from "ags/gtk4/app"
 import { Astal, Gdk } from "ags/gtk4"
-import { createPoll } from "ags/time"
 import { onCleanup } from "ags"
 import CurrentWindow from "./CurrentWindow"
 import Media from "./Media"
+import Clock from "./Clock"
 
 export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
@@ -24,6 +24,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
         </box>
         <box $type="end">
           <Media />
+          <Clock />
         </box>
       </centerbox>
     </window>

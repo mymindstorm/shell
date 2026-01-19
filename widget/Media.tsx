@@ -1,5 +1,5 @@
 import AstalMpris from "gi://AstalMpris"
-import { createBinding, createState, For, With } from "gnim"
+import { createBinding, createComputed, createState, For, With } from "gnim"
 
 const PAUSE_ICON = ""
 const PLAY_ICON = ""
@@ -7,6 +7,12 @@ const PLAY_ICON = ""
 export default function Media() {
   const mpris = AstalMpris.get_default()
   const [title, setTitle] = createState("")
+  const players = createBinding(mpris, "players")
+  // For now, we just assume that the first one is the one we want to control
+  // For some reason, firefox doesn't let multiple exist. Just the primary one.
+  const firstPlayer = createComputed(() =>
+    players().length > 0 ? players()[0] : null,
+  )
 
   mpris.connect("player-added", (_, player) => {
     player.connect("notify", (player) => {
@@ -20,7 +26,7 @@ export default function Media() {
           ? PLAY_ICON
           : PAUSE_ICON
 
-      setTitle(`${icon} ${player.title}`)
+      setTitle(`${icon} ${player.title}`.trim())
     })
   })
 
@@ -35,9 +41,9 @@ export default function Media() {
       <With value={title}>
         {(title) =>
           title && (
-            <menubutton>
+            <button onClicked={() => firstPlayer()?.play_pause()}>
               <label label={title} />
-            </menubutton>
+            </button>
           )
         }
       </With>
