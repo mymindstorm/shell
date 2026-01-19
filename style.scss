@@ -4,6 +4,10 @@
 $fg-color: #eeeeec;
 $bg-color: color.adjust(#3d3846, $saturation: -100%, $lightness: -4%);
 
+// Status colors
+$success-color: #8ff0a4;
+$dim-opacity: 0.6;
+
 window.Bar {
   background: transparent;
   color: $fg-color;
@@ -25,4 +29,71 @@ window.Bar {
     border-radius: 8px;
     margin: 2px;
   }
+}
+
+// Bluetooth Popover
+.bluetooth-popover {
+  padding: 12px;
+  min-width: 280px;
+
+  separator {
+    margin: 4px 0;
+  }
+}
+
+.bluetooth-header {
+  padding-bottom: 8px;
+
+  .heading {
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+}
+
+.device-row {
+  padding: 8px 4px;
+  border-radius: 8px;
+  transition: background-color 150ms ease;
+
+  hover {
+    background-color: color.adjust($fg-color, $alpha: -0.92);
+  }
+}
+
+.device-icon {
+  opacity: 0.8;
+}
+
+.device-name {
+  font-weight: 500;
+}
+
+.device-status {
+  font-size: 0.85em;
+}
+
+.status-connected {
+  color: $success-color;
+}
+
+.status-disconnected {
+  color: color.adjust($fg-color, $alpha: -0.4);
+}
+
+.device-button {
+  padding: 4px 12px;
+  border-radius: 6px;
+  min-width: 80px;
+}
+
+.empty-state {
+  padding: 24px;
+
+  image {
+    opacity: 0.4;
+  }
+}
+
+.dim-label {
+  opacity: $dim-opacity;
 }
