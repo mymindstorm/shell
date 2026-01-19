@@ -5,6 +5,7 @@ import Media from "./Media"
 import Clock from "./Clock"
 import Bluetooth from "./Bluetooth"
 import Network from "./Network"
+import Battery from "./Battery"
 
 export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
@@ -27,6 +28,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
           <Media />
           <Network />
           <Bluetooth />
+          <Battery />
           <Clock />
         </box>
       </centerbox>
