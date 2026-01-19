@@ -4,6 +4,7 @@ import { onCleanup } from "ags"
 import CurrentWindow from "./CurrentWindow"
 import Media from "./Media"
 import Clock from "./Clock"
+import Bluetooth from "./Bluetooth"
 
 export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
@@ -24,6 +25,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
         </box>
         <box $type="end">
           <Media />
+          <Bluetooth />
           <Clock />
         </box>
       </centerbox>
