@@ -31,16 +31,16 @@ export default function Bluetooth() {
   return (
     <menubutton>
       <box>
-        <With value={numConnected}>
-          {(numConnected) => (
-            <label label={numConnected > 0 ? `${numConnected} ` : ""} />
-          )}
-        </With>
         <With value={btOn}>
           {(btOn) => {
             const icon = btOn ? "bluetooth-symbolic" : "bluetooth-none-symbolic"
             return <image iconName={icon} />
           }}
+        </With>
+        <With value={numConnected}>
+          {(numConnected) => (
+            <label label={numConnected > 0 ? ` ${numConnected}` : ""} />
+          )}
         </With>
       </box>
       <popover>
@@ -65,7 +65,7 @@ export default function Bluetooth() {
 
               const buttonLabel = createComputed(() => {
                 if (connecting()) return "..."
-                return connected() ? "Disconnect" : "Connect"
+                return connected() ? "Sever" : "Connect"
               })
 
               const statusClass = createComputed(() =>
