@@ -72,13 +72,13 @@
         }:
         let
           inherit (lib.options) mkEnableOption mkOption;
-          inherit (lib.modules) mkIf mkMerge;
+          inherit (lib.modules) mkIf;
           inherit (lib) types literalExpression;
 
-          cfg = config.programs.brendan-shell;
+          cfg = config.services.brendan-shell;
         in
         {
-          options.programs.brendan-shell = {
+          options.services.brendan-shell = {
             enable = mkEnableOption "Brendan's Shell";
 
             package = mkOption {
@@ -88,43 +88,35 @@
               description = "The brendan-shell package to use.";
             };
 
-            systemd = {
-              enable = mkEnableOption "Brendan's Shell systemd integration";
-
-              target = mkOption {
-                type = types.str;
-                default = "graphical-session.target";
-                example = "hyprland-session.target";
-                description = ''
-                  The systemd target that will automatically start the shell service.
-                '';
-              };
+            target = mkOption {
+              type = types.str;
+              default = "graphical-session.target";
+              example = "hyprland-session.target";
+              description = ''
+                The systemd target that will automatically start the shell service.
+              '';
             };
           };
 
-          config = mkIf cfg.enable (mkMerge [
-            {
-              home.packages = [ cfg.package ];
-            }
+          config = mkIf cfg.enable {
+            home.packages = [ cfg.package ];
 
-            (mkIf cfg.systemd.enable {
-              systemd.user.services.brendan-shell = {
-                Unit = {
-                  Description = "Brendan's Shell";
-                  PartOf = [ cfg.systemd.target ];
-                  After = [ cfg.systemd.target ];
-                  ConditionEnvironment = "WAYLAND_DISPLAY";
-                };
-
-                Service = {
-                  ExecStart = "${cfg.package}/bin/brendan-shell";
-                  Restart = "on-failure";
-                };
-
-                Install.WantedBy = [ cfg.systemd.target ];
+            systemd.user.services.brendan-shell = {
+              Unit = {
+                Description = "Brendan's Shell";
+                PartOf = [ cfg.target ];
+                After = [ cfg.target ];
+                ConditionEnvironment = "WAYLAND_DISPLAY";
               };
-            })
-          ]);
+
+              Service = {
+                ExecStart = "${cfg.package}/bin/brendan-shell";
+                Restart = "on-failure";
+              };
+
+              Install.WantedBy = [ cfg.target ];
+            };
+          };
         };
 
       devShells.${system} = {
