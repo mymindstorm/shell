@@ -12,6 +12,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       ags,
     }:
@@ -23,8 +24,11 @@
 
       astalPackages = with ags.packages.${system}; [
         io
-        astal4 # or astal3 for gtk3
-        # notifd tray wireplumber
+        astal4
+        mpris
+        bluetooth
+        network
+        battery
       ];
 
       extraPackages = astalPackages ++ [
