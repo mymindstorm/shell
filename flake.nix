@@ -38,9 +38,15 @@
     in
     {
       packages.${system} = {
-        default = pkgs.stdenv.mkDerivation {
+        default = pkgs.buildNpmPackage {
           name = pname;
           src = ./.;
+
+          npmDeps = pkgs.importNpmLock {
+            npmRoot = ./.;
+          };
+
+          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
 
           nativeBuildInputs = with pkgs; [
             wrapGAppsHook3
@@ -49,6 +55,9 @@
           ];
 
           buildInputs = extraPackages ++ [ pkgs.gjs ];
+
+          # Disable the default npm build
+          dontNpmBuild = true;
 
           installPhase = ''
             runHook preInstall
@@ -84,7 +93,7 @@
             package = mkOption {
               type = types.package;
               default = self.packages.${pkgs.system}.default;
-              defaultText = literalExpression "inputs.brendan-shell.packages.\${pkgs.system}.default";
+              defaultText = literalExpression "inputs. brendan-shell.packages.\${pkgs.system}.default";
               description = "The brendan-shell package to use.";
             };
 
