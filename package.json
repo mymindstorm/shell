@@ -1,8 +1,6 @@
 {
   "dependencies": {
-    "ags": "*",
-    "dayjs": "^1.11.19",
-    "gnim": "*"
+    "dayjs": "^1.11.19"
   },
   "prettier": {
     "semi": false,
