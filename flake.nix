@@ -3,7 +3,6 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
-
     ags = {
       url = "github:aylur/ags";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -17,61 +16,113 @@
       ags,
     }:
     let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      pname = "brendan-shell";
-      entry = "app.tsx";
-
-      astalPackages = with ags.packages.${system}; [
-        io
-        astal4
-        mpris
-        bluetooth
-        network
-        battery
+      supportedSystems = [
+        "x86_64-linux"
+        "aarch64-linux"
       ];
 
-      extraPackages = astalPackages ++ [
-        pkgs.libadwaita
-        pkgs.libsoup_3
-      ];
+      forAllSystems =
+        function:
+        nixpkgs.lib.genAttrs supportedSystems (
+          system:
+          function (
+            import nixpkgs {
+              inherit system;
+              overlays = [
+                (final: prev: {
+                  ags = ags.packages.${system};
+                })
+              ];
+            }
+          )
+        );
     in
     {
-      packages.${system} = {
-        default = pkgs.buildNpmPackage {
-          name = pname;
-          src = ./.;
+      packages = forAllSystems (
+        pkgs:
+        let
+          pname = "brendan-shell";
+          entry = "app.tsx";
 
-          npmDeps = pkgs.importNpmLock {
-            npmRoot = ./.;
-          };
-
-          npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-
-          nativeBuildInputs = with pkgs; [
-            wrapGAppsHook3
-            gobject-introspection
-            ags.packages.${system}.default
+          # Since we added the overlay above, we can access ags from pkgs
+          astalPackages = with pkgs.ags; [
+            io
+            astal4
+            mpris
+            bluetooth
+            network
+            battery
           ];
 
-          buildInputs = extraPackages ++ [ pkgs.gjs ];
+          extraPackages = astalPackages ++ [
+            pkgs.libadwaita
+            pkgs.libsoup_3
+          ];
+        in
+        {
+          default = pkgs.buildNpmPackage {
+            name = pname;
+            src = ./.;
 
-          # Disable the default npm build
-          dontNpmBuild = true;
+            # Use the newer npmConfigHook if possible, or just standard npmDeps
+            npmDeps = pkgs.importNpmLock {
+              npmRoot = ./.;
+            };
+            npmConfigHook = pkgs.importNpmLock.npmConfigHook;
 
-          installPhase = ''
-            runHook preInstall
+            nativeBuildInputs = with pkgs; [
+              wrapGAppsHook3
+              gobject-introspection
+              # ags executable is now in pkgs thanks to overlay
+              pkgs.ags.default
+            ];
 
-            mkdir -p $out/bin
-            mkdir -p $out/share
-            cp -r * $out/share
-            ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
+            buildInputs = extraPackages ++ [ pkgs.gjs ];
 
-            runHook postInstall
-          '';
+            dontNpmBuild = true;
+
+            installPhase = ''
+              runHook preInstall
+
+              mkdir -p $out/bin
+              mkdir -p $out/share
+              cp -r * $out/share
+
+              # 'ags bundle' needs the ags binary
+              ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
+
+              runHook postInstall
+            '';
+          };
+        }
+      );
+
+      # 4. DevShells for all systems
+      devShells = forAllSystems (pkgs: {
+        default = pkgs.mkShell {
+          # Use the ags package from the overlay, overriding its extraPackages
+          buildInputs = [
+            (pkgs.ags.default.override {
+              extraPackages =
+                with pkgs.ags;
+                [
+                  io
+                  astal4
+                  mpris
+                  bluetooth
+                  network
+                  battery
+                ]
+                ++ [
+                  pkgs.libadwaita
+                  pkgs.libsoup_3
+                ];
+            })
+          ];
         };
-      };
+      });
 
+      # 5. Home Manager Module (System Agnostic)
       homeManagerModules.default =
         {
           config,
@@ -80,11 +131,16 @@
           ...
         }:
         let
-          inherit (lib.options) mkEnableOption mkOption;
-          inherit (lib.modules) mkIf;
-          inherit (lib) types literalExpression;
-
+          inherit (lib)
+            mkEnableOption
+            mkOption
+            types
+            literalExpression
+            mkIf
+            ;
           cfg = config.services.brendan-shell;
+
+          sys = pkgs.stdenv.hostPlatform.system;
         in
         {
           options.services.brendan-shell = {
@@ -92,8 +148,9 @@
 
             package = mkOption {
               type = types.package;
-              default = self.packages.${pkgs.system}.default;
-              defaultText = literalExpression "inputs. brendan-shell.packages.\${pkgs.system}.default";
+              # Fix: Use the computed 'sys' variable
+              default = self.packages.${sys}.default;
+              defaultText = literalExpression "inputs.brendan-shell.packages.${sys}.default";
               description = "The brendan-shell package to use.";
             };
 
@@ -101,9 +158,7 @@
               type = types.str;
               default = "graphical-session.target";
               example = "hyprland-session.target";
-              description = ''
-                The systemd target that will automatically start the shell service.
-              '';
+              description = "The systemd target that will automatically start the shell service.";
             };
           };
 
@@ -127,15 +182,5 @@
             };
           };
         };
-
-      devShells.${system} = {
-        default = pkgs.mkShell {
-          buildInputs = [
-            (ags.packages.${system}.default.override {
-              inherit extraPackages;
-            })
-          ];
-        };
-      };
     };
 }
